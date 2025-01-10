@@ -1,6 +1,11 @@
 import express from "express";
 import { Server } from "socket.io";
 
+interface playerCoordiSchema {
+	x: number;
+	y: number;
+}
+
 const app = express();
 const port = 3000;
 
@@ -16,6 +21,12 @@ io.on("connection", function (socket) {
 	socket.on("message", function (data) {
 		console.log(`Message received by the client is ${data}`);
 		socket.broadcast.emit(data);
+	});
+
+	socket.on("playerMove", function (playerCoordi: playerCoordiSchema) {
+		console.log(
+			`Player current coordinate x: ${playerCoordi.x}, y: ${playerCoordi.y}`
+		);
 	});
 
 	socket.on("disconnect", function () {
