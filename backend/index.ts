@@ -1,5 +1,6 @@
 import express from "express";
 import { Server } from "socket.io";
+import cors from "cors";
 
 interface playerCoordiSchema {
 	x: number;
@@ -7,13 +8,19 @@ interface playerCoordiSchema {
 }
 
 const app = express();
+app.use(cors());
 const port = 3000;
 
 const server = app.listen(port, function () {
 	console.log(new Date() + ` port Running: ${port}`);
 });
 
-const io = new Server(server);
+const io = new Server(server, {
+	cors: {
+		origin: "http://localhost:5173",
+		methods: ["GET", "POST"],
+	},
+});
 
 io.on("connection", function (socket) {
 	console.log(`Socket id for current connection esatablised is ${socket.id}`);

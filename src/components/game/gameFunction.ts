@@ -6,8 +6,8 @@ let player: Phaser.GameObjects.Sprite;
 let playerMove: boolean = false;
 
 function preload(this: Phaser.Scene) {
-	this.load.image("background", "./assets/sky.png");
-	this.load.image("player", "./assets/star.png");
+	this.load.image("background", "./sky.png");
+	this.load.image("player", "./star.png");
 }
 
 function create(this: Phaser.Scene) {
@@ -34,12 +34,14 @@ function update(this: Phaser.Scene) {
 		playerMove = true;
 	}
 	if (cursors.up.isDown) {
-		player.y += (speed * this.game.loop.delta) / 1000;
+		player.y -= (speed * this.game.loop.delta) / 1000;
 		playerMove = true;
 	}
 	if (cursors.down.isDown) {
-		player.x -= (speed * this.game.loop.delta) / 1000;
+		player.y += (speed * this.game.loop.delta) / 1000;
 		playerMove = true;
+	} else {
+		playerMove = false;
 	}
 
 	if (playerMove) {
