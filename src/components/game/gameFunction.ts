@@ -1,8 +1,14 @@
 import Phaser from "phaser";
 import socket from "../utils/socketConnection";
 
+interface playerCoordiSchema {
+	x: number;
+	y: number;
+}
+
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 let player: Phaser.GameObjects.Sprite;
+let players: { [id: string]: Phaser.GameObjects.Sprite } = {};
 let playerMove: boolean = false;
 
 function preload(this: Phaser.Scene) {
@@ -18,6 +24,29 @@ function create(this: Phaser.Scene) {
 		"player"
 	);
 	cursors = this.input.keyboard!.createCursorKeys();
+
+	socket.on(
+		"newPlayer",
+		(playerId: string, playerCoordi: playerCoordiSchema) => {
+			addPlayer(this, playerId, playerCoordi);
+		}
+	);
+
+	socket.on("currentPlayers", () => {});
+
+	socket.on("disconnect", () => {});
+}
+
+function addPlayer(
+	scene: Phaser.Scene,
+	playerId: string,
+	playerCoordi: playerCoordiSchema
+) {
+	players[playerId] = scene.add.sprite(
+		playerCoordi.x,
+		playerCoordi.y,
+		"player"
+	);
 }
 
 function update(this: Phaser.Scene) {

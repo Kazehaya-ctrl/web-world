@@ -6,6 +6,10 @@ import "./App.css";
 function App() {
 	useEffect(() => {
 		const game = new Phaser.Game(gameConfig);
+
+		return () => {
+			game.destroy(true);
+		};
 	}, []);
 
 	return (

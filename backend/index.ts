@@ -22,8 +22,15 @@ const io = new Server(server, {
 	},
 });
 
+let players: { [id: string]: playerCoordiSchema } = {};
+
 io.on("connection", function (socket) {
 	console.log(`Socket id for current connection esatablised is ${socket.id}`);
+	players[socket.id] = { x: Math.random() * 800, y: Math.random() * 600 };
+	socket.broadcast.emit("newPlayer", {
+		playerId: socket.id,
+		...players[socket.id],
+	});
 
 	socket.on("message", function (data) {
 		console.log(`Message received by the client is ${data}`);
@@ -32,6 +39,9 @@ io.on("connection", function (socket) {
 
 	socket.on("playerMove", function (playerCoordi: playerCoordiSchema) {
 		console.log(
+			`Player current coordinate x: ${playerCoordi.x}, y: ${playerCoordi.y}`
+		);
+		socket.broadcast.emit(
 			`Player current coordinate x: ${playerCoordi.x}, y: ${playerCoordi.y}`
 		);
 	});
