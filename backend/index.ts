@@ -5,6 +5,7 @@ import cors from "cors";
 interface playerCoordiSchema {
 	x: number;
 	y: number;
+	id?: string;
 }
 
 const app = express();
@@ -24,29 +25,35 @@ const io = new Server(server, {
 
 let players: { [id: string]: playerCoordiSchema } = {};
 
-io.on("connection", function (socket) {
+io.on("connection", (socket) => {
 	console.log(`Socket id for current connection esatablised is ${socket.id}`);
 	players[socket.id] = { x: Math.random() * 800, y: Math.random() * 600 };
+	console.log(players);
+
+	socket.emit("currentPlayers", players);
+
 	socket.broadcast.emit("newPlayer", {
-		playerId: socket.id,
+		id: socket.id,
 		...players[socket.id],
 	});
 
-	socket.on("message", function (data) {
+	socket.on("message", (data) => {
 		console.log(`Message received by the client is ${data}`);
-		socket.broadcast.emit(data);
 	});
 
-	socket.on("playerMove", function (playerCoordi: playerCoordiSchema) {
+	socket.on("playerMove", (playerCoordi: playerCoordiSchema) => {
 		console.log(
-			`Player current coordinate x: ${playerCoordi.x}, y: ${playerCoordi.y}`
+			`Player: ${socket.id} current coordinate x: ${playerCoordi.x}, y: ${playerCoordi.y}`
 		);
-		socket.broadcast.emit(
-			`Player current coordinate x: ${playerCoordi.x}, y: ${playerCoordi.y}`
-		);
+		if (players[socket.id]) {
+			players[socket.id] = playerCoordi;
+			socket.broadcast.emit("playerMove", { id: socket.id, ...playerCoordi });
+		}
 	});
 
-	socket.on("disconnect", function () {
-		console.log(`Client disconnected`);
+	socket.on("disconnect", () => {
+		console.log(`Client disconnected ${socket.id}`);
+		delete players[socket.id];
+		io.emit("playerDisconnect", socket.id);
 	});
 });

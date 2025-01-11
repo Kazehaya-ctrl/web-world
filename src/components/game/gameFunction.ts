@@ -4,12 +4,12 @@ import socket from "../utils/socketConnection";
 interface playerCoordiSchema {
 	x: number;
 	y: number;
+	id?: string;
 }
 
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 let player: Phaser.GameObjects.Sprite;
 let players: { [id: string]: Phaser.GameObjects.Sprite } = {};
-let playerMove: boolean = false;
 
 function preload(this: Phaser.Scene) {
 	this.load.image("background", "./sky.png");
@@ -25,16 +25,34 @@ function create(this: Phaser.Scene) {
 	);
 	cursors = this.input.keyboard!.createCursorKeys();
 
+	socket.on("newPlayer", (playerCoordi: playerCoordiSchema) => {
+		addPlayer(this, playerCoordi.id!, playerCoordi);
+	});
+
 	socket.on(
-		"newPlayer",
-		(playerId: string, playerCoordi: playerCoordiSchema) => {
-			addPlayer(this, playerId, playerCoordi);
+		"currentPlayers",
+		(playerList: { [id: string]: playerCoordiSchema }) => {
+			console.log(playerList);
+			for (const id in playerList) {
+				if (id == socket.id) continue;
+				addPlayer(this, id, playerList[id]);
+			}
 		}
 	);
 
-	socket.on("currentPlayers", () => {});
+	socket.on("playerMove", (playerData: playerCoordiSchema) => {
+		if (players[playerData.id!]) {
+			players[playerData.id!].x = playerData.x;
+			players[playerData.id!].y = playerData.y;
+		}
+	});
 
-	socket.on("disconnect", () => {});
+	socket.on("playerDisconnect", (id: string) => {
+		if (players[id]) {
+			players[id].destroy();
+			delete players[id];
+		}
+	});
 }
 
 function addPlayer(
@@ -53,28 +71,27 @@ function update(this: Phaser.Scene) {
 	if (!cursors || !player) return;
 
 	const speed = 200;
+	let moved = false;
 
 	if (cursors.left.isDown) {
 		player.x -= (speed * this.game.loop.delta) / 1000;
-		playerMove = true;
+		moved = true;
 	}
 	if (cursors.right.isDown) {
 		player.x += (speed * this.game.loop.delta) / 1000;
-		playerMove = true;
+		moved = true;
 	}
 	if (cursors.up.isDown) {
 		player.y -= (speed * this.game.loop.delta) / 1000;
-		playerMove = true;
+		moved = true;
 	}
 	if (cursors.down.isDown) {
 		player.y += (speed * this.game.loop.delta) / 1000;
-		playerMove = true;
-	} else {
-		playerMove = false;
+		moved = true;
 	}
 
-	if (playerMove) {
-		socket.emit("playerMove", { x: player.x, y: player.y });
+	if (moved) {
+		socket.emit("playerMove", { id: socket.id, x: player.x, y: player.y });
 	}
 }
 
