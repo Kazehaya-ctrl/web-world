@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import gameConfig from "./utils/gameConfig";
 import Phaser from "phaser";
+import socket from "./components/utils/socketConnection";
 import "./App.css";
 
 function App() {
 	useEffect(() => {
 		const game = new Phaser.Game(gameConfig);
+		console.log(socket.id);
 
 		return () => {
 			game.destroy(true);

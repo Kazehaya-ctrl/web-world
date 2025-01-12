@@ -30,12 +30,12 @@ io.on("connection", (socket) => {
 	players[socket.id] = { x: Math.random() * 800, y: Math.random() * 600 };
 	console.log(players);
 
-	socket.emit("currentPlayers", players);
-
 	socket.broadcast.emit("newPlayer", {
 		id: socket.id,
 		...players[socket.id],
 	});
+
+	socket.emit("currentPlayers", players);
 
 	socket.on("message", (data) => {
 		console.log(`Message received by the client is ${data}`);

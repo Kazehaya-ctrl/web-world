@@ -26,19 +26,20 @@ function create(this: Phaser.Scene) {
 	cursors = this.input.keyboard!.createCursorKeys();
 
 	socket.on("newPlayer", (playerCoordi: playerCoordiSchema) => {
-		addPlayer(this, playerCoordi.id!, playerCoordi);
+		console.log("Received newPlayer:", playerCoordi);
+		if (playerCoordi.id && playerCoordi.id !== socket.id) {
+			addPlayer(this, playerCoordi.id, playerCoordi);
+		}
 	});
 
-	socket.on(
-		"currentPlayers",
-		(playerList: { [id: string]: playerCoordiSchema }) => {
-			console.log(playerList);
-			for (const id in playerList) {
-				if (id == socket.id) continue;
-				addPlayer(this, id, playerList[id]);
+	socket.on("currentPlayers", (playerList) => {
+		console.log({ playerList: playerList });
+		Object.keys(playerList).forEach((key: string) => {
+			if (key !== socket.id) {
+				addPlayer(this, key, { x: playerList.x, y: playerList.y });
 			}
-		}
-	);
+		});
+	});
 
 	socket.on("playerMove", (playerData: playerCoordiSchema) => {
 		if (players[playerData.id!]) {
@@ -60,6 +61,7 @@ function addPlayer(
 	playerId: string,
 	playerCoordi: playerCoordiSchema
 ) {
+	console.log(`Adding Player ${playerId} at ${playerCoordi}`);
 	players[playerId] = scene.add.sprite(
 		playerCoordi.x,
 		playerCoordi.y,
