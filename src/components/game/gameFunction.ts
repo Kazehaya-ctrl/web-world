@@ -1,15 +1,10 @@
 import Phaser from "phaser";
 import socket from "../utils/socketConnection";
-
-interface playerCoordiSchema {
-	x: number;
-	y: number;
-	id?: string;
-}
+import { playerDetailSchema } from "../../utils/interface/schema";
 
 let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-let player: Phaser.GameObjects.Sprite;
 let players: { [id: string]: Phaser.GameObjects.Sprite } = {};
+let player: Phaser.GameObjects.Sprite;
 
 function preload(this: Phaser.Scene) {
 	this.load.image("background", "./sky.png");
@@ -18,6 +13,7 @@ function preload(this: Phaser.Scene) {
 
 function create(this: Phaser.Scene) {
 	this.add.image(this.scale.width / 2, this.scale.height / 2, "background");
+
 	player = this.add.sprite(
 		Math.random() * this.scale.width,
 		Math.random() * this.scale.height,
@@ -25,46 +21,21 @@ function create(this: Phaser.Scene) {
 	);
 	cursors = this.input.keyboard!.createCursorKeys();
 
-	socket.on("newPlayer", (playerCoordi: playerCoordiSchema) => {
-		console.log("Received newPlayer:", playerCoordi);
-		if (playerCoordi.id && playerCoordi.id !== socket.id) {
-			addPlayer(this, playerCoordi.id, playerCoordi);
-		}
-	});
-
-	socket.on("currentPlayers", (playerList) => {
-		console.log({ playerList: playerList });
-		Object.keys(playerList).forEach((key: string) => {
-			if (key !== socket.id) {
-				addPlayer(this, key, { x: playerList.x, y: playerList.y });
-			}
-		});
-	});
-
-	socket.on("playerMove", (playerData: playerCoordiSchema) => {
-		if (players[playerData.id!]) {
-			players[playerData.id!].x = playerData.x;
-			players[playerData.id!].y = playerData.y;
-		}
-	});
-
-	socket.on("playerDisconnect", (id: string) => {
-		if (players[id]) {
-			players[id].destroy();
-			delete players[id];
+	socket.on("newPlayer", (newplayerDetail: playerDetailSchema) => {
+		if (newplayerDetail.id !== socket.id) {
+			addPlayer(this, newplayerDetail.id!, newplayerDetail);
 		}
 	});
 }
 
 function addPlayer(
 	scene: Phaser.Scene,
-	playerId: string,
-	playerCoordi: playerCoordiSchema
+	playerSocketId: string,
+	playerDetailSchema: playerDetailSchema
 ) {
-	console.log(`Adding Player ${playerId} at ${playerCoordi}`);
-	players[playerId] = scene.add.sprite(
-		playerCoordi.x,
-		playerCoordi.y,
+	players[playerSocketId] = scene.add.sprite(
+		playerDetailSchema.x,
+		playerDetailSchema.y,
 		"player"
 	);
 }
@@ -90,10 +61,6 @@ function update(this: Phaser.Scene) {
 	if (cursors.down.isDown) {
 		player.y += (speed * this.game.loop.delta) / 1000;
 		moved = true;
-	}
-
-	if (moved) {
-		socket.emit("playerMove", { id: socket.id, x: player.x, y: player.y });
 	}
 }
 
