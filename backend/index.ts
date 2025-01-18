@@ -27,5 +27,21 @@ io.on("connection", (socket) => {
 		id: socket.id,
 	};
 
+	console.log(players);
 	socket.broadcast.emit("newPlayer", players[socket.id]);
+
+	socket.on("playerPosition", (playerDetail: playerDetailSchema) => {
+		console.log(
+			`Player Position of ${playerDetail.id} x: ${playerDetail.x} and y: ${playerDetail.y}`
+		);
+		for (let key in players) {
+			if (playerDetail.id == key) {
+				players[playerDetail.id] = {
+					x: playerDetail.x,
+					y: playerDetail.y,
+				};
+				socket.broadcast.emit("playersMove", playerDetail);
+			}
+		}
+	});
 });

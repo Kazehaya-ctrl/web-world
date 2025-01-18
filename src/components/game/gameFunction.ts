@@ -23,8 +23,18 @@ function create(this: Phaser.Scene) {
 
 	socket.on("newPlayer", (newplayerDetail: playerDetailSchema) => {
 		if (newplayerDetail.id !== socket.id) {
+			console.log("newPlayer hit" + newplayerDetail.id);
 			addPlayer(this, newplayerDetail.id!, newplayerDetail);
 		}
+	});
+
+	socket.on("playersMove", (playerDetail: playerDetailSchema) => {
+		console.log(playerDetail);
+		if (players[playerDetail.id!] && playerDetail.id !== socket.id) {
+			players[playerDetail.id!].x = playerDetail.x;
+			players[playerDetail.id!].y = playerDetail.y;
+		}
+		console.log(players[playerDetail.id!]);
 	});
 }
 
@@ -61,6 +71,15 @@ function update(this: Phaser.Scene) {
 	if (cursors.down.isDown) {
 		player.y += (speed * this.game.loop.delta) / 1000;
 		moved = true;
+	}
+
+	if (moved === true) {
+		let playerDetail: playerDetailSchema = {
+			x: player.x,
+			y: player.y,
+			id: socket.id,
+		};
+		socket.emit("playerPosition", playerDetail);
 	}
 }
 
