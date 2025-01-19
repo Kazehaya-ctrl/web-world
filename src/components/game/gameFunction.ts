@@ -24,12 +24,13 @@ function create(this: Phaser.Scene) {
 	socket.on(
 		"currentPlayers",
 		(playersList: { [id: string]: playerDetailSchema }) => {
-			console.log("currentPlayer hit");
+			console.log("currentPlayer hit" + playersList);
 			for (let key in playersList) {
 				if (key !== socket.id) {
 					addPlayer(this, key, playersList[key]);
 				}
 			}
+			console.log(players);
 		}
 	);
 
@@ -52,6 +53,7 @@ function create(this: Phaser.Scene) {
 	socket.on("playerDisconnected", (id: string) => {
 		if (players[id]) {
 			players[id].destroy();
+			delete players[id];
 		}
 	});
 }

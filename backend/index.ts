@@ -28,8 +28,14 @@ io.on("connection", (socket) => {
 	};
 
 	console.log(players);
-	io.emit("currentPlayers", players);
-	socket.broadcast.emit("newPlayer", players[socket.id]);
+
+	socket.on("demandCurrentPlayer", () => {
+		io.emit("currentPlayers", players);
+	});
+
+	socket.on("addNewPlayer", () => {
+		socket.broadcast.emit("newPlayer", players[socket.id]);
+	});
 
 	socket.on("playerPosition", (playerDetail: playerDetailSchema) => {
 		console.log(
