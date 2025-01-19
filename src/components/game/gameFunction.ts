@@ -21,6 +21,18 @@ function create(this: Phaser.Scene) {
 	);
 	cursors = this.input.keyboard!.createCursorKeys();
 
+	socket.on(
+		"currentPlayers",
+		(playersList: { [id: string]: playerDetailSchema }) => {
+			console.log("currentPlayer hit");
+			for (let key in playersList) {
+				if (key !== socket.id) {
+					addPlayer(this, key, playersList[key]);
+				}
+			}
+		}
+	);
+
 	socket.on("newPlayer", (newplayerDetail: playerDetailSchema) => {
 		if (newplayerDetail.id !== socket.id) {
 			console.log("newPlayer hit" + newplayerDetail.id);
@@ -35,6 +47,12 @@ function create(this: Phaser.Scene) {
 			players[playerDetail.id!].y = playerDetail.y;
 		}
 		console.log(players[playerDetail.id!]);
+	});
+
+	socket.on("playerDisconnected", (id: string) => {
+		if (players[id]) {
+			players[id].destroy();
+		}
 	});
 }
 

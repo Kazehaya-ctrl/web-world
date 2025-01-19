@@ -28,6 +28,7 @@ io.on("connection", (socket) => {
 	};
 
 	console.log(players);
+	io.emit("currentPlayers", players);
 	socket.broadcast.emit("newPlayer", players[socket.id]);
 
 	socket.on("playerPosition", (playerDetail: playerDetailSchema) => {
@@ -43,5 +44,11 @@ io.on("connection", (socket) => {
 				socket.broadcast.emit("playersMove", playerDetail);
 			}
 		}
+	});
+
+	socket.on("disconnect", () => {
+		console.log(`Client disconnected: ${socket.id}`);
+		delete players[socket.id];
+		io.emit("playerDisconnected", socket.id);
 	});
 });
