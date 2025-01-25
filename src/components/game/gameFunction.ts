@@ -11,8 +11,8 @@ export class gameFunction extends Phaser.Scene {
 		this.player = null;
 		this.cursors = null;
 		this.speed = 100;
-		this.mapHeight = 800;
-		this.mapWidth = 600;
+		this.mapHeight = 600;
+		this.mapWidth = 800;
 	}
 
 	preload() {
@@ -66,25 +66,20 @@ export class gameFunction extends Phaser.Scene {
 
 	update() {
 		let isMoving = false;
+
 		if (this.cursors!.left.isDown) {
 			this.player!.x -= (this.speed * this.game.loop.delta) / 1000;
 			this.player!.anims.play("left", true);
 			isMoving = true;
-		}
-
-		if (this.cursors!.right.isDown) {
+		} else if (this.cursors!.right.isDown) {
 			this.player!.x += (this.speed * this.game.loop.delta) / 1000;
 			this.player!.anims.play("right", true);
 			isMoving = true;
-		}
-
-		if (this.cursors!.up.isDown) {
+		} else if (this.cursors!.up.isDown) {
 			this.player!.y -= (this.speed * this.game.loop.delta) / 1000;
 			this.player!.anims.play("back", true);
 			isMoving = true;
-		}
-
-		if (this.cursors!.down.isDown) {
+		} else if (this.cursors!.down.isDown) {
 			this.player!.y += (this.speed * this.game.loop.delta) / 1000;
 			this.player!.anims.play("centre", true);
 			isMoving = true;
@@ -93,5 +88,8 @@ export class gameFunction extends Phaser.Scene {
 		if (!isMoving) {
 			this.player!.anims.play("idle", true);
 		}
+
+		this.player!.x = Phaser.Math.Clamp(this.player!.x, 0, this.mapWidth);
+		this.player!.y = Phaser.Math.Clamp(this.player!.y, 0, this.mapHeight);
 	}
 }
