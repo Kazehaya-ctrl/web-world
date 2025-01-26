@@ -19,13 +19,13 @@ io.on("connection", (socket) => {
 	})
 
 	console.log(players);
-	socket.emit('newPlayer', players.get(socket.id))
-	socket.broadcast.emit('currentPlayers', players);
+	socket.broadcast.emit('newPlayer', players.get(socket.id))
+	socket.emit('currentPlayers', players);
 
-	socket.on('playerMove', (player: playerDetailSchema) => {
-		players.set(player.id!, player);
-		socket.broadcast.emit('playerMoved', player);
-	});
+	// socket.on('playerMove', (player: playerDetailSchema) => {
+	// 	players.set(player.id!, player);
+	// 	socket.broadcast.emit('playerMoved', player);
+	// });
 
 	socket.on('disconnect', () => {
 		console.log(`Player Disconnected ${socket.id}`);

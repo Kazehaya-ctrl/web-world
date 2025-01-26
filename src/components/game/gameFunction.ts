@@ -57,6 +57,7 @@ export class gameFunction extends Phaser.Scene {
 			console.log('Connected to server');
 
 			this.socket?.on('currentPlayers', (playersList: Map<string, playerDetailSchema>) => {
+				console.log('currentPlayers', playersList)
 				Object.keys(playersList).forEach((playerId) => {
 					if (playerId !== this.socket?.id) {
 						this.addPlayer(playersList.get(playerId)!);
@@ -68,13 +69,14 @@ export class gameFunction extends Phaser.Scene {
 				if (player.id !== this.socket?.id) {
 					this.addPlayer(player);
 				}
+				console.log('newPlayer', this.players);
 			})
 
-			this.socket?.on('playerMove', (player: playerDetailSchema) => {
-				if (player.id !== this.socket?.id) {
-					this.players?.get(player.id!)!.setPosition(player.x, player.y);
-				}
-			})
+			// this.socket?.on('playerMove', (player: playerDetailSchema) => {
+			// 	if (player.id !== this.socket?.id) {
+			// 		this.players?.get(player.id!)!.setPosition(player.x, player.y);
+			// 	}
+			// })
 
 			this.socket?.on('playerDisconnected', (id: string) => {
 				const playerSprite = this.players?.get(id);
@@ -185,11 +187,11 @@ export class gameFunction extends Phaser.Scene {
 			this.player!.anims.play("idle", true);
 		}
 
-		this.socket?.emit('playerMove', {
-			id: this.socket?.id,
-			x: this.player!.x,
-			y: this.player!.y
-		})
+		// this.socket?.emit('playerMove', {
+		// 	id: this.socket?.id,
+		// 	x: this.player!.x,
+		// 	y: this.player!.y
+		// })
 		// console.log(`Player positions, { ${this.player!.x}, ${this.player!.y} }`);
 	}
 }
