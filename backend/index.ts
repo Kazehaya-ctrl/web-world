@@ -23,8 +23,10 @@ io.on("connection", (socket) => {
 	socket.emit('currentPlayers', Object.fromEntries(players));
 
 	socket.on('playerMove', (player: playerDetailSchema) => {
-		players.set(player.id!, player);
-		socket.broadcast.emit('playerMoved', player);
+		if (player && player.id && players.has(player.id)) {
+            players.set(player.id, player);
+            socket.broadcast.emit('playerMoved', player);
+        }
 	});
 
 	socket.on('disconnect', () => {
