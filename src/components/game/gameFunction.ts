@@ -37,6 +37,7 @@ export class gameFunction extends Phaser.Scene {
 	}
 
 	create() {
+		this.playerGroup = this.physics.add.group();
 		this.socket = io('http://localhost:4000', { transports: ['websocket'] })
 		const map = this.make.tilemap({ key: "map" });
 		const tileset = map.addTilesetImage("tuxmon-sample-32px-extruded", "tiles");
@@ -68,6 +69,7 @@ export class gameFunction extends Phaser.Scene {
 			this.socket?.on('newPlayer', (player: playerDetailSchema) => {
 				this.addPlayer(player);
 				console.log('newPlayer', this.players);
+				console.log('spriteLength', this.playerGroup?.getChildren().length)
 			})
 
 			// this.socket?.on('playerMove', (player: playerDetailSchema) => {
