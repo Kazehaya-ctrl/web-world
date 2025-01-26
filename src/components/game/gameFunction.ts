@@ -1,9 +1,10 @@
 import Phaser from "phaser";
 
 export class gameFunction extends Phaser.Scene {
-	player: Phaser.GameObjects.Sprite | null;
+	player: Phaser.Physics.Arcade.Sprite | null;
 	cursors: Phaser.Types.Input.Keyboard.CursorKeys | null;
 	speed: number;
+	controls: any;
 	constructor() {
 		super("scene_1");
 		this.player = null;
@@ -19,23 +20,27 @@ export class gameFunction extends Phaser.Scene {
 		});
 
 		this.load.image(
-			"repeating-background",
-			"https://mikewesthad.github.io/phaser-3-tilemap-blog-posts/post-1/assets/images/escheresque_dark.png"
+			"tiles",
+			"https://mikewesthad.github.io/phaser-3-tilemap-blog-posts/post-1/assets/tilesets/tuxmon-sample-32px-extruded.png"
+		);
+		this.load.tilemapTiledJSON(
+			"map",
+			"https://mikewesthad.github.io/phaser-3-tilemap-blog-posts/post-1/assets/tilemaps/tuxemon-town.json"
 		);
 	}
 
 	create() {
-		const { width, height } = this.sys.game.config;
-		const bg = this.add.tileSprite(
-			0,
-			0,
-			Number(width),
-			Number(height),
-			"repeating-background"
-		);
-		bg.setOrigin(0, 0);
+		const map = this.make.tilemap({ key: "map" });
+		const tileset = map.addTilesetImage("tuxmon-sample-32px-extruded", "tiles");
 
-		this.player = this.add.sprite(100, 250, "player");
+		const belowLayer = map.createLayer("Below Player", tileset!, 0, 0);
+		const worldLayer = map.createLayer("World", tileset!, 0, 0);
+		const aboveLayer = map.createLayer("Above Player", tileset!, 0, 0);
+
+		worldLayer?.setCollisionByProperty({ collides: true });
+		aboveLayer?.setDepth(10);
+
+		this.player = this.physics.add.sprite(700, 500, "player");
 
 		this.anims.create({
 			key: "idle",
@@ -71,31 +76,42 @@ export class gameFunction extends Phaser.Scene {
 			repeat: -1,
 		});
 
+		this.physics.add.collider(this.player, worldLayer!);
+		const camera = this.cameras.main;
+		camera.startFollow(this.player);
+		camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+
 		this.cursors = this.input.keyboard!.createCursorKeys();
 	}
 
 	update() {
-		let isMoving = false;
+		const speed = 125;
+
+		this.player?.setVelocity(0);
 
 		if (this.cursors!.left.isDown) {
-			this.player!.x -= (this.speed * this.game.loop.delta) / 1000;
-			this.player!.anims.play("left", true);
-			isMoving = true;
+			this.player!.setVelocityX(-speed);
 		} else if (this.cursors!.right.isDown) {
-			this.player!.x += (this.speed * this.game.loop.delta) / 1000;
-			this.player!.anims.play("right", true);
-			isMoving = true;
-		} else if (this.cursors!.up.isDown) {
-			this.player!.y -= (this.speed * this.game.loop.delta) / 1000;
-			this.player!.anims.play("back", true);
-			isMoving = true;
-		} else if (this.cursors!.down.isDown) {
-			this.player!.y += (this.speed * this.game.loop.delta) / 1000;
-			this.player!.anims.play("centre", true);
-			isMoving = true;
+			this.player!.setVelocityX(speed);
 		}
 
-		if (!isMoving) {
+		if (this.cursors!.up.isDown) {
+			this.player!.setVelocityY(-speed);
+		} else if (this.cursors!.down.isDown) {
+			this.player!.setVelocityY(speed);
+		}
+
+		this.player!.body!.velocity.normalize().scale(speed);
+
+		if (this.cursors!.left.isDown) {
+			this.player!.anims.play("left", true);
+		} else if (this.cursors!.right.isDown) {
+			this.player!.anims.play("right", true);
+		} else if (this.cursors!.up.isDown) {
+			this.player!.anims.play("back", true);
+		} else if (this.cursors!.down.isDown) {
+			this.player!.anims.play("centre", true);
+		} else {
 			this.player!.anims.play("idle", true);
 		}
 	}
