@@ -4,15 +4,11 @@ export class gameFunction extends Phaser.Scene {
 	player: Phaser.GameObjects.Sprite | null;
 	cursors: Phaser.Types.Input.Keyboard.CursorKeys | null;
 	speed: number;
-	mapHeight: number;
-	mapWidth: number;
 	constructor() {
 		super("scene_1");
 		this.player = null;
 		this.cursors = null;
 		this.speed = 100;
-		this.mapHeight = 600;
-		this.mapWidth = 800;
 	}
 
 	preload() {
@@ -21,10 +17,24 @@ export class gameFunction extends Phaser.Scene {
 			frameWidth: 32,
 			frameHeight: 48,
 		});
+
+		this.load.image(
+			"repeating-background",
+			"https://mikewesthad.github.io/phaser-3-tilemap-blog-posts/post-1/assets/images/escheresque_dark.png"
+		);
 	}
 
 	create() {
-		this.add.image(this.scale.width / 2, this.scale.height / 2, "background");
+		const { width, height } = this.sys.game.config;
+		const bg = this.add.tileSprite(
+			0,
+			0,
+			Number(width),
+			Number(height),
+			"repeating-background"
+		);
+		bg.setOrigin(0, 0);
+
 		this.player = this.add.sprite(100, 250, "player");
 
 		this.anims.create({
@@ -88,8 +98,5 @@ export class gameFunction extends Phaser.Scene {
 		if (!isMoving) {
 			this.player!.anims.play("idle", true);
 		}
-
-		this.player!.x = Phaser.Math.Clamp(this.player!.x, 0, this.mapWidth);
-		this.player!.y = Phaser.Math.Clamp(this.player!.y, 0, this.mapHeight);
 	}
 }

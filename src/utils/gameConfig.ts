@@ -3,9 +3,9 @@ import { gameFunction } from "../components/game/gameFunction";
 
 var gameConfig: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
-	width: 800,
-	height: 400,
-	parent: "phaser-game",
+	width: 1000,
+	height: 800,
+	parent: "game-container",
 	physics: {
 		default: "arcade",
 		arcade: {
