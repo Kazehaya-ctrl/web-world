@@ -9,6 +9,7 @@ export class gameFunction extends Phaser.Scene {
 	controls: any;
 	socket: Socket | null;
 	players: Map<string, Phaser.Physics.Arcade.Sprite> | null;
+	playerGroup: Phaser.Physics.Arcade.Group | null;
 	constructor() {
 		super("scene_1");
 		this.player = null;
@@ -16,6 +17,7 @@ export class gameFunction extends Phaser.Scene {
 		this.speed = 125;
 		this.socket = null;
 		this.players = new Map();
+		this.playerGroup = null;
 	}
 
 	preload() {
@@ -129,7 +131,7 @@ export class gameFunction extends Phaser.Scene {
 		camera.startFollow(this.player);
 		camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
-		// this.input.keyboard!.once("keydown-D", (event: any) => {
+		{// this.input.keyboard!.once("keydown-D", (event: any) => {
 		// 	// Turn on physics debugging to show player's hitbox
 		// 	this.physics.world.createDebugGraphic();
 
@@ -141,15 +143,17 @@ export class gameFunction extends Phaser.Scene {
 		// 		faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
 		// 	});
 		// });
+		}
 
 		this.cursors = this.input.keyboard!.createCursorKeys();
 
 
 	}
 
-	addPlayer(player: playerDetailSchema) {
-		const playerSprite = this.physics.add.sprite(player.x, player.y, "player");
-		this.players?.set(player.id!, playerSprite);
+	addPlayer(playerDetail: playerDetailSchema) {
+		const playerSprite = this.physics.add.sprite(playerDetail.x, playerDetail.y, "player");
+		this.players?.set(playerDetail.id!, playerSprite);
+		this.playerGroup?.add(playerSprite);
 	}
 
 	update() {
