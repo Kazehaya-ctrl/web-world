@@ -3,8 +3,8 @@ import { gameFunction } from "../components/game/gameFunction";
 
 var gameConfig: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
-	width: 1000,
-	height: 800,
+	width: 800,
+	height: 600,
 	parent: "game-container",
 	pixelArt: true,
 	physics: {

@@ -40,7 +40,16 @@ export class gameFunction extends Phaser.Scene {
 		worldLayer?.setCollisionByProperty({ collides: true });
 		aboveLayer?.setDepth(10);
 
-		this.player = this.physics.add.sprite(700, 500, "player");
+		const spawnPoint: any = map.findObject(
+			"Objects",
+			(obj) => obj.name === "Spawn Point"
+		);
+
+		this.player = this.physics.add.sprite(
+			spawnPoint!.x,
+			spawnPoint!.y,
+			"player"
+		);
 
 		this.anims.create({
 			key: "idle",
@@ -80,6 +89,19 @@ export class gameFunction extends Phaser.Scene {
 		const camera = this.cameras.main;
 		camera.startFollow(this.player);
 		camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+
+		// this.input.keyboard!.once("keydown-D", (event: any) => {
+		// 	// Turn on physics debugging to show player's hitbox
+		// 	this.physics.world.createDebugGraphic();
+
+		// 	// Create worldLayer collision graphic above the player, but below the help text
+		// 	const graphics = this.add.graphics().setAlpha(0.75).setDepth(20);
+		// 	worldLayer!.renderDebug(graphics, {
+		// 		tileColor: null, // Color of non-colliding tiles
+		// 		collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+		// 		faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
+		// 	});
+		// });
 
 		this.cursors = this.input.keyboard!.createCursorKeys();
 	}
