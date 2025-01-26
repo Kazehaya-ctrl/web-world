@@ -13,7 +13,6 @@ export class gameFunction extends Phaser.Scene {
 	}
 
 	preload() {
-		this.load.image("background", "/background.png");
 		this.load.spritesheet("player", "/character.png", {
 			frameWidth: 32,
 			frameHeight: 48,
@@ -136,5 +135,6 @@ export class gameFunction extends Phaser.Scene {
 		} else {
 			this.player!.anims.play("idle", true);
 		}
+		// console.log(`Player positions, { ${this.player!.x}, ${this.player!.y} }`);
 	}
 }
