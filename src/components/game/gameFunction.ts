@@ -1,15 +1,21 @@
 import Phaser from "phaser";
+import { io, Socket } from "socket.io-client";
+import { playerDetailSchema } from "../../utils/interface/schema";
 
 export class gameFunction extends Phaser.Scene {
 	player: Phaser.Physics.Arcade.Sprite | null;
 	cursors: Phaser.Types.Input.Keyboard.CursorKeys | null;
 	speed: number;
 	controls: any;
+	socket: Socket | null;
+	players: Map<string, Phaser.Physics.Arcade.Sprite> | null;
 	constructor() {
 		super("scene_1");
 		this.player = null;
 		this.cursors = null;
-		this.speed = 100;
+		this.speed = 125;
+		this.socket = null;
+		this.players = new Map();
 	}
 
 	preload() {
@@ -29,10 +35,11 @@ export class gameFunction extends Phaser.Scene {
 	}
 
 	create() {
+		this.socket = io('http://localhost:4000', { transports: ['websocket'] })
 		const map = this.make.tilemap({ key: "map" });
 		const tileset = map.addTilesetImage("tuxmon-sample-32px-extruded", "tiles");
 
-		const belowLayer = map.createLayer("Below Player", tileset!, 0, 0);
+		map.createLayer("Below Player", tileset!, 0, 0);
 		const worldLayer = map.createLayer("World", tileset!, 0, 0);
 		const aboveLayer = map.createLayer("Above Player", tileset!, 0, 0);
 
@@ -43,6 +50,39 @@ export class gameFunction extends Phaser.Scene {
 			"Objects",
 			(obj) => obj.name === "Spawn Point"
 		);
+
+		this.socket?.on('connect', () => {
+			console.log('Connected to server');
+
+			this.socket?.on('currentPlayers', (playersList: Map<string, playerDetailSchema>) => {
+				Object.keys(playersList).forEach((playerId) => {
+					if (playerId !== this.socket?.id) {
+						this.addPlayer(playersList.get(playerId)!);
+					}
+				})
+			})
+
+			this.socket?.on('newPlayer', (player: playerDetailSchema) => {
+				if (player.id !== this.socket?.id) {
+					this.addPlayer(player);
+				}
+			})
+
+			this.socket?.on('playerMove', (player: playerDetailSchema) => {
+				if (player.id !== this.socket?.id) {
+					this.players?.get(player.id!)!.setPosition(player.x, player.y);
+				}
+			})
+
+			this.socket?.on('playerDisconnected', (id: string) => {
+				const playerSprite = this.players?.get(id);
+				if (playerSprite) {
+					playerSprite.destroy();
+					this.players?.delete(id);
+				}
+				console.log(`Player Disconnected ${id}`);
+			})
+		})
 
 		this.player = this.physics.add.sprite(
 			spawnPoint!.x,
@@ -103,26 +143,31 @@ export class gameFunction extends Phaser.Scene {
 		// });
 
 		this.cursors = this.input.keyboard!.createCursorKeys();
+
+
+	}
+
+	addPlayer(player: playerDetailSchema) {
+		const playerSprite = this.physics.add.sprite(player.x, player.y, "player");
+		this.players?.set(player.id!, playerSprite);
 	}
 
 	update() {
-		const speed = 125;
-
 		this.player?.setVelocity(0);
 
 		if (this.cursors!.left.isDown) {
-			this.player!.setVelocityX(-speed);
+			this.player!.setVelocityX(-this.speed);
 		} else if (this.cursors!.right.isDown) {
-			this.player!.setVelocityX(speed);
+			this.player!.setVelocityX(this.speed);
 		}
 
 		if (this.cursors!.up.isDown) {
-			this.player!.setVelocityY(-speed);
+			this.player!.setVelocityY(-this.speed);
 		} else if (this.cursors!.down.isDown) {
-			this.player!.setVelocityY(speed);
+			this.player!.setVelocityY(this.speed);
 		}
 
-		this.player!.body!.velocity.normalize().scale(speed);
+		this.player!.body!.velocity.normalize().scale(this.speed);
 
 		if (this.cursors!.left.isDown) {
 			this.player!.anims.play("left", true);
@@ -135,6 +180,12 @@ export class gameFunction extends Phaser.Scene {
 		} else {
 			this.player!.anims.play("idle", true);
 		}
+
+		this.socket?.emit('playerMove', {
+			id: this.socket?.id,
+			x: this.player!.x,
+			y: this.player!.y
+		})
 		// console.log(`Player positions, { ${this.player!.x}, ${this.player!.y} }`);
 	}
 }

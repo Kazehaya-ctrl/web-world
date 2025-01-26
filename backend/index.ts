@@ -30,6 +30,6 @@ io.on("connection", (socket) => {
 	socket.on('disconnect', () => {
 		console.log(`Player Disconnected ${socket.id}`);
 		players.delete(socket.id);
-		socket.broadcast.emit('playerDisconnected', players);
+		socket.broadcast.emit('playerDisconnected', socket.id);
 	});
 });
