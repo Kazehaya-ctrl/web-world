@@ -38,7 +38,12 @@ export class gameFunction extends Phaser.Scene {
 
 	create() {
 		this.playerGroup = this.physics.add.group();
-		this.socket = io('http://localhost:4000', { transports: ['websocket'] })
+		this.socket = io('http://localhost:4000', { 
+			transports: ['websocket'],
+			autoConnect: false,  
+			reconnection: false  
+		});
+		this.socket.connect(); 
 		const map = this.make.tilemap({ key: "map" });
 		const tileset = map.addTilesetImage("tuxmon-sample-32px-extruded", "tiles");
 
@@ -81,6 +86,7 @@ export class gameFunction extends Phaser.Scene {
 				if (playerSprite) {
 					playerSprite.destroy();
 					this.players?.delete(id);
+					this.destroy();
 				}
 				console.log(`Player Disconnected ${id}`);
 			})
@@ -194,6 +200,10 @@ export class gameFunction extends Phaser.Scene {
 			x: this.player!.x,
 			y: this.player!.y
 		})
-		// console.log(`Player positions, { ${this.player!.x}, ${this.player!.y} }`);
+	}
+
+	destroy() {
+		this.socket?.disconnect();
+		this.socket = null;
 	}
 }
