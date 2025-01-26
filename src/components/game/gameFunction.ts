@@ -72,11 +72,9 @@ export class gameFunction extends Phaser.Scene {
 				console.log('spriteLength', this.playerGroup?.getChildren().length)
 			})
 
-			// this.socket?.on('playerMove', (player: playerDetailSchema) => {
-			// 	if (player.id !== this.socket?.id) {
-			// 		this.players?.get(player.id!)!.setPosition(player.x, player.y);
-			// 	}
-			// })
+			this.socket?.on('playerMoved', (player: playerDetailSchema) => {
+					this.players?.get(player.id!)!.setPosition(player.x, player.y);
+			})
 
 			this.socket?.on('playerDisconnected', (id: string) => {
 				const playerSprite = this.players?.get(id);
@@ -191,11 +189,11 @@ export class gameFunction extends Phaser.Scene {
 			this.player!.anims.play("idle", true);
 		}
 
-		// this.socket?.emit('playerMove', {
-		// 	id: this.socket?.id,
-		// 	x: this.player!.x,
-		// 	y: this.player!.y
-		// })
+		this.socket?.emit('playerMove', {
+			id: this.socket?.id,
+			x: this.player!.x,
+			y: this.player!.y
+		})
 		// console.log(`Player positions, { ${this.player!.x}, ${this.player!.y} }`);
 	}
 }

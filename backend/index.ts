@@ -22,10 +22,10 @@ io.on("connection", (socket) => {
 	socket.broadcast.emit('newPlayer', players.get(socket.id))
 	socket.emit('currentPlayers', Object.fromEntries(players));
 
-	// socket.on('playerMove', (player: playerDetailSchema) => {
-	// 	players.set(player.id!, player);
-	// 	socket.broadcast.emit('playerMoved', player);
-	// });
+	socket.on('playerMove', (player: playerDetailSchema) => {
+		players.set(player.id!, player);
+		socket.broadcast.emit('playerMoved', player);
+	});
 
 	socket.on('disconnect', () => {
 		console.log(`Player Disconnected ${socket.id}`);
