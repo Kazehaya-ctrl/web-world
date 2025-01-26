@@ -20,7 +20,7 @@ io.on("connection", (socket) => {
 
 	console.log(players);
 	socket.broadcast.emit('newPlayer', players.get(socket.id))
-	socket.emit('currentPlayers', players);
+	socket.emit('currentPlayers', Object.fromEntries(players));
 
 	// socket.on('playerMove', (player: playerDetailSchema) => {
 	// 	players.set(player.id!, player);

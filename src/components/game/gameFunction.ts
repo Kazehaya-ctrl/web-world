@@ -56,19 +56,17 @@ export class gameFunction extends Phaser.Scene {
 		this.socket?.on('connect', () => {
 			console.log('Connected to server');
 
-			this.socket?.on('currentPlayers', (playersList: Map<string, playerDetailSchema>) => {
+			this.socket?.on('currentPlayers', (playersList: Record<string, playerDetailSchema>) => {
 				console.log('currentPlayers', playersList)
 				Object.keys(playersList).forEach((playerId) => {
 					if (playerId !== this.socket?.id) {
-						this.addPlayer(playersList.get(playerId)!);
+						this.addPlayer(playersList[playerId]);
 					}
 				})
 			})
 
 			this.socket?.on('newPlayer', (player: playerDetailSchema) => {
-				if (player.id !== this.socket?.id) {
-					this.addPlayer(player);
-				}
+				this.addPlayer(player);
 				console.log('newPlayer', this.players);
 			})
 
@@ -93,6 +91,10 @@ export class gameFunction extends Phaser.Scene {
 			spawnPoint!.y,
 			"player"
 		);
+
+		this.players?.set(this.socket?.id!, this.player)
+
+		this.playerGroup?.add(this.player)
 
 		this.anims.create({
 			key: "idle",
