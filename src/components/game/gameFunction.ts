@@ -83,19 +83,6 @@ export class gameFunction extends Phaser.Scene {
 				this.players?.get(player.id!)!.setPosition(player.x, player.y);
 			})
 
-			this.socket?.on('enableInteration', (data: {playerid: string, isNear: boolean}) => {
-				console.log("enableInteracton is hitting", data)
-				if (data.playerid === this.socket?.id) {
-					this.proximityText?.setVisible(data.isNear) 
-					if (data.isNear) {
-						this.proximityText!.setPosition(
-							this.player!.x - this.proximityText!.width / 2,
-							this.player!.y - 50
-						);
-					}
-					
-				}
-			})
 
 			this.socket?.on('playerDisconnected', (id: string) => {
 				const playerSprite = this.players?.get(id);
@@ -106,6 +93,20 @@ export class gameFunction extends Phaser.Scene {
 				}
 				console.log(`Player Disconnected ${id}`);
 			})
+		})
+
+		this.socket?.on('enableInteration', (data: { playerid: string, isNear: boolean }) => {
+			console.log("enableInteracton is hitting", data)
+			if (data.playerid === this.socket?.id) {
+				this.proximityText?.setVisible(data.isNear)
+				if (data.isNear) {
+					this.proximityText!.setPosition(
+						this.player!.x - this.proximityText!.width / 2,
+						this.player!.y - 50
+					);
+				}
+
+			}
 		})
 
 		this.player = this.physics.add.sprite(
@@ -240,14 +241,20 @@ export class gameFunction extends Phaser.Scene {
 					otherPlayer.y
 				)
 
-				this.socket?.emit('playerAreNear', {
-					player1id: this.socket.id,
-					player2id: id,
-					distance: playersDistance
-				})
+				// console.log("playersDistance", playersDistance)
+
+				if (playersDistance > 0) {
+
+					this.socket?.emit('playerAreNear', {
+						player1id: this.socket.id,
+						player2id: id,
+						distance: playersDistance
+					})
+				}
 			}
 		})
 	}
+
 
 	destroy() {
 		this.socket?.disconnect();
