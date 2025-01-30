@@ -10,6 +10,7 @@ export class gameFunction extends Phaser.Scene {
 	socket: Socket | null;
 	players: Map<string, Phaser.Physics.Arcade.Sprite> | null;
 	playerGroup: Phaser.Physics.Arcade.Group | null;
+	proximityText: Phaser.GameObjects.Text | null;
 	constructor() {
 		super("scene_1");
 		this.player = null;
@@ -18,6 +19,7 @@ export class gameFunction extends Phaser.Scene {
 		this.socket = null;
 		this.players = new Map();
 		this.playerGroup = null;
+		this.proximityText = null;
 	}
 
 	preload() {
@@ -38,12 +40,12 @@ export class gameFunction extends Phaser.Scene {
 
 	create() {
 		this.playerGroup = this.physics.add.group();
-		this.socket = io('http://localhost:4000', { 
+		this.socket = io('http://localhost:4000', {
 			transports: ['websocket'],
-			autoConnect: false,  
-			reconnection: false  
+			autoConnect: false,
+			reconnection: false
 		});
-		this.socket.connect(); 
+		this.socket.connect();
 		const map = this.make.tilemap({ key: "map" });
 		const tileset = map.addTilesetImage("tuxmon-sample-32px-extruded", "tiles");
 
@@ -78,7 +80,7 @@ export class gameFunction extends Phaser.Scene {
 			})
 
 			this.socket?.on('playerMoved', (player: playerDetailSchema) => {
-					this.players?.get(player.id!)!.setPosition(player.x, player.y);
+				this.players?.get(player.id!)!.setPosition(player.x, player.y);
 			})
 
 			this.socket?.on('playerDisconnected', (id: string) => {
@@ -142,22 +144,29 @@ export class gameFunction extends Phaser.Scene {
 		camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
 		{// this.input.keyboard!.once("keydown-D", (event: any) => {
-		// 	// Turn on physics debugging to show player's hitbox
-		// 	this.physics.world.createDebugGraphic();
+			// 	// Turn on physics debugging to show player's hitbox
+			// 	this.physics.world.createDebugGraphic();
 
-		// 	// Create worldLayer collision graphic above the player, but below the help text
-		// 	const graphics = this.add.graphics().setAlpha(0.75).setDepth(20);
-		// 	worldLayer!.renderDebug(graphics, {
-		// 		tileColor: null, // Color of non-colliding tiles
-		// 		collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-		// 		faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
-		// 	});
-		// });
+			// 	// Create worldLayer collision graphic above the player, but below the help text
+			// 	const graphics = this.add.graphics().setAlpha(0.75).setDepth(20);
+			// 	worldLayer!.renderDebug(graphics, {
+			// 		tileColor: null, // Color of non-colliding tiles
+			// 		collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+			// 		faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
+			// 	});
+			// });
 		}
 
 		this.cursors = this.input.keyboard!.createCursorKeys();
+		this.physics.add.collider(this.playerGroup!, this.playerGroup!);
 
-
+		this.proximityText = this.add.text(0, 0, 'Press E to interact', {
+			fontSize: '16px',
+			backgroundColor: '#000000',
+			padding: { x: 5, y: 5 }
+		});
+		this.proximityText.setDepth(20);
+		this.proximityText.setVisible(false);
 	}
 
 	addPlayer(playerDetail: playerDetailSchema) {
@@ -200,6 +209,36 @@ export class gameFunction extends Phaser.Scene {
 			x: this.player!.x,
 			y: this.player!.y
 		})
+
+		this.checkPlayerProximity();
+	}
+
+	checkPlayerProximity() {
+		if (!this.player || !this.players) return;
+
+		const proximityDistance = 100;
+		let isNearPlayer = false;
+
+		this.players.forEach((otherPlayer, id) => {
+			if (id !== this.socket?.id) {
+				const distance = Phaser.Math.Distance.Between(
+					this.player!.x,
+					this.player!.y,
+					otherPlayer.x,
+					otherPlayer.y
+				);
+
+				if (distance < proximityDistance) {
+					isNearPlayer = true;
+					this.proximityText!.setPosition(
+						this.player!.x - this.proximityText!.width / 2,
+						this.player!.y - 50
+					);
+				}
+			}
+		});
+
+		this.proximityText!.setVisible(isNearPlayer);
 	}
 
 	destroy() {
