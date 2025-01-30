@@ -83,6 +83,20 @@ export class gameFunction extends Phaser.Scene {
 				this.players?.get(player.id!)!.setPosition(player.x, player.y);
 			})
 
+			this.socket?.on('enableInteration', (data: {playerid: string, isNear: boolean}) => {
+				console.log("enableInteracton is hitting", data)
+				if (data.playerid === this.socket?.id) {
+					this.proximityText?.setVisible(data.isNear) 
+					if (data.isNear) {
+						this.proximityText!.setPosition(
+							this.player!.x - this.proximityText!.width / 2,
+							this.player!.y - 50
+						);
+					}
+					
+				}
+			})
+
 			this.socket?.on('playerDisconnected', (id: string) => {
 				const playerSprite = this.players?.get(id);
 				if (playerSprite) {
@@ -158,7 +172,7 @@ export class gameFunction extends Phaser.Scene {
 		}
 
 		this.cursors = this.input.keyboard!.createCursorKeys();
-		this.physics.add.collider(this.playerGroup!, this.playerGroup!);
+		// this.physics.add.collider(this.playerGroup!, this.playerGroup!);
 
 		this.proximityText = this.add.text(0, 0, 'Press E to interact', {
 			fontSize: '16px',
@@ -210,35 +224,29 @@ export class gameFunction extends Phaser.Scene {
 			y: this.player!.y
 		})
 
-		this.checkPlayerProximity();
+		this.checkDistance()
 	}
 
-	checkPlayerProximity() {
+	checkDistance() {
 		if (!this.player || !this.players) return;
 
-		const proximityDistance = 100;
-		let isNearPlayer = false;
 
 		this.players.forEach((otherPlayer, id) => {
 			if (id !== this.socket?.id) {
-				const distance = Phaser.Math.Distance.Between(
+				let playersDistance = Phaser.Math.Distance.Between(
 					this.player!.x,
 					this.player!.y,
 					otherPlayer.x,
 					otherPlayer.y
-				);
+				)
 
-				if (distance < proximityDistance) {
-					isNearPlayer = true;
-					this.proximityText!.setPosition(
-						this.player!.x - this.proximityText!.width / 2,
-						this.player!.y - 50
-					);
-				}
+				this.socket?.emit('playerAreNear', {
+					player1id: this.socket.id,
+					player2id: id,
+					distance: playersDistance
+				})
 			}
-		});
-
-		this.proximityText!.setVisible(isNearPlayer);
+		})
 	}
 
 	destroy() {
