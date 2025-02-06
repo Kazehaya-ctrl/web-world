@@ -158,19 +158,19 @@ export class gameFunction extends Phaser.Scene {
 		camera.startFollow(this.player);
 		camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
-		{// this.input.keyboard!.once("keydown-D", (event: any) => {
-			// 	// Turn on physics debugging to show player's hitbox
-			// 	this.physics.world.createDebugGraphic();
+		// this.input.keyboard!.once("keydown-D", (event: any) => {
+		// 	// Turn on physics debugging to show player's hitbox
+		// 	this.physics.world.createDebugGraphic();
 
-			// 	// Create worldLayer collision graphic above the player, but below the help text
-			// 	const graphics = this.add.graphics().setAlpha(0.75).setDepth(20);
-			// 	worldLayer!.renderDebug(graphics, {
-			// 		tileColor: null, // Color of non-colliding tiles
-			// 		collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-			// 		faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
-			// 	});
-			// });
-		}
+		// 	// Create worldLayer collision graphic above the player, but below the help text
+		// 	const graphics = this.add.graphics().setAlpha(0.75).setDepth(20);
+		// 	worldLayer!.renderDebug(graphics, {
+		// 		tileColor: null, // Color of non-colliding tiles
+		// 		collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+		// 		faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
+		// 	});
+		// });
+
 
 		this.cursors = this.input.keyboard!.createCursorKeys();
 		// this.physics.add.collider(this.playerGroup!, this.playerGroup!);
