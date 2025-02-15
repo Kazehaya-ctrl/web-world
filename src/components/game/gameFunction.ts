@@ -95,19 +95,19 @@ export class gameFunction extends Phaser.Scene {
 			})
 		})
 
-		this.socket?.on('enableInteration', (data: { playerid: string, isNear: boolean }) => {
-			console.log("enableInteracton is hitting", data)
-			if (data.playerid === this.socket?.id) {
-				this.proximityText?.setVisible(data.isNear)
-				if (data.isNear) {
-					this.proximityText!.setPosition(
-						this.player!.x - this.proximityText!.width / 2,
-						this.player!.y - 50
-					);
-				}
+		// this.socket?.on('enableInteration', (data: { playerid: string, isNear: boolean }) => {
+		// 	console.log("enableInteracton is hitting", data)
+		// 	if (data.playerid === this.socket?.id) {
+		// 		this.proximityText?.setVisible(data.isNear)
+		// 		if (data.isNear) {
+		// 			this.proximityText!.setPosition(
+		// 				this.player!.x - this.proximityText!.width / 2,
+		// 				this.player!.y - 50
+		// 			);
+		// 		}
 
-			}
-		})
+		// 	}
+		// })
 
 		this.player = this.physics.add.sprite(
 			spawnPoint!.x,
@@ -158,6 +158,8 @@ export class gameFunction extends Phaser.Scene {
 		camera.startFollow(this.player);
 		camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
+		{
+
 		// this.input.keyboard!.once("keydown-D", (event: any) => {
 		// 	// Turn on physics debugging to show player's hitbox
 		// 	this.physics.world.createDebugGraphic();
@@ -170,6 +172,7 @@ export class gameFunction extends Phaser.Scene {
 		// 		faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
 		// 	});
 		// });
+		}
 
 
 		this.cursors = this.input.keyboard!.createCursorKeys();
@@ -231,30 +234,29 @@ export class gameFunction extends Phaser.Scene {
 	checkDistance() {
 		if (!this.player || !this.players) return;
 
-
+		let isNear = true;
+		if (this.players.size === 0) return;
 		this.players.forEach((otherPlayer, id) => {
 			if (id !== this.socket?.id) {
-				let playersDistance = Phaser.Math.Distance.Between(
+				let distance = Phaser.Math.Distance.Between(
 					this.player!.x,
 					this.player!.y,
 					otherPlayer.x,
 					otherPlayer.y
-				)
-
-				// console.log("playersDistance", playersDistance)
-
-				if (playersDistance > 0) {
-
-					this.socket?.emit('playerAreNear', {
-						player1id: this.socket.id,
-						player2id: id,
-						distance: playersDistance
-					})
+				);
+				console.log(distance)
+				if (distance > 100) {
+					isNear = false;
 				}
 			}
-		})
+		});
+		
+		this.proximityText?.setVisible(isNear);
+		this.proximityText!.setPosition(
+			this.player!.x - this.proximityText!.width / 2,
+			this.player!.y - 50
+		);
 	}
-
 
 	destroy() {
 		this.socket?.disconnect();

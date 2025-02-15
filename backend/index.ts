@@ -58,11 +58,11 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on('playerAreNear', (playersInvolved: { player1id: string, player2id: string, distance: number }) => {
-        const isNear = playersInvolved.distance < 100
-        socket.to(playersInvolved.player1id).emit('enableInteration', { playerid: playersInvolved.player1id, isNear })
-        socket.to(playersInvolved.player2id).emit('enableInteration', { playerid: playersInvolved.player2id, isNear })
-    })
+    // socket.on('playerAreNear', (playersInvolved: { player1id: string, player2id: string, distance: number }) => {
+    //     const isNear = playersInvolved.distance < 100
+    //     socket.to(playersInvolved.player1id).emit('enableInteration', { playerid: playersInvolved.player1id, isNear })
+    //     socket.to(playersInvolved.player2id).emit('enableInteration', { playerid: playersInvolved.player2id, isNear })
+    // })
 
     socket.on('disconnect', () => {
         console.log(`Player Disconnected ${socket.id}`);
